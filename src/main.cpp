@@ -8,8 +8,8 @@ const int relayPin =  5;       // the number of the relay pin
 unsigned long previousMillis = 0;
 
 // the amount of time to wait before turning off the relay
-// const long interval = 1000 * 60 * 5; // 5 mins
-const long interval = 1000 * 10 * 1; // 10s
+const long interval = 1000 * 60 * 5; // 5 mins
+// const long interval = 1000 * 10 * 1; // 10 seconds
 
 void ICACHE_RAM_ATTR buttonPressed() {
   previousMillis = millis();
