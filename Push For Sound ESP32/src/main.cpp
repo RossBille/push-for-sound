@@ -20,7 +20,7 @@ uint8_t relayState = LOW;
 boolean timerState = true; // false = disabled, true = enabled
 
 // the amount of time to wait before turning off the relay
-const long interval = 1000 * 60 * 5; // 5 mins
+long interval = 1000 * 60 * 5; // 5 mins
 // const long interval = 1000 * 10 * 1; // 10 seconds
 
 // see https://randomnerdtutorials.com/esp32-web-server-arduino-ide/ and https://lastminuteengineers.com/creating-esp32-web-server-arduino-ide/
@@ -70,13 +70,17 @@ void handleIndex() {
     str += "disabled";
   }
   str += "</p>";
+  str += "<p> Timer Duration: ";
+  str += interval / 1000;
+  str += " seconds</p>";
   str += "<p><a href=\"/enable-timer\">Enable timer mode</a>";
   str += "</br>";
-  str += "<p><a href=\"/disable-timer\">Disable timer mode</a>";
+  str += "<a href=\"/disable-timer\">Disable timer mode</a>";
   str += "</br>";
-  str += "<p><a href=\"/force-on\">Force relays on</a>";
+  str += "<a href=\"/force-on\">Force relays on</a>";
   str += "</br>";
-  str += "<p><a href=\"/force-off\">Force relays off</a>";
+  str += "<a href=\"/force-off\">Force relays off</a>";
+  str += "</p>";
   str +="</body>\n";
   str +="</html>\n";
 
@@ -113,6 +117,14 @@ void handleRelaysOff() {
   server.send(302, "text/plain", "");
 }
 
+void handleUpdateTimerDuration() {
+  if (server.hasArg("durationSeconds")) {
+    interval = server.arg("durationSeconds").toInt() * 1000;
+  }
+  server.sendHeader("Location", "/", true);  
+  server.send(302, "text/plain", "");
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -142,6 +154,7 @@ void setup() {
   server.on("/", handleIndex);
   server.on("/disable-timer", handleDisableTimer);
   server.on("/enable-timer", handleEnableTimer);
+  server.on("/update-timer-duration", handleUpdateTimerDuration);
   server.on("/force-on", handleRelaysOn);
   server.on("/force-off", handleRelaysOff);
 }
