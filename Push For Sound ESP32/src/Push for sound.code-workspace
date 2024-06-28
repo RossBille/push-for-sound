@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../Push for sound"
+		},
+		{
+			"name": "Push For Sound ESP32",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
