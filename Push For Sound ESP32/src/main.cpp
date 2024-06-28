@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <WebServer.h>
 // NOTE: add wifi_secrets.h with the following format:
@@ -25,6 +26,8 @@ long interval = 1000 * 60 * 5; // 5 mins
 
 // see https://randomnerdtutorials.com/esp32-web-server-arduino-ide/ and https://lastminuteengineers.com/creating-esp32-web-server-arduino-ide/
 WebServer server(80);
+
+Preferences prefs;
 
 void setRelays(uint8_t val) {
     Serial.print("Setting relays: ");
@@ -118,8 +121,13 @@ void handleRelaysOff() {
 }
 
 void handleUpdateTimerDuration() {
+  Serial.println("#handleUpdateTimerDuration");
   if (server.hasArg("durationSeconds")) {
     interval = server.arg("durationSeconds").toInt() * 1000;
+    Serial.println(interval);
+    prefs.begin("prefs", false);
+    prefs.putLong("interval", interval);
+    prefs.end();
   }
   server.sendHeader("Location", "/", true);  
   server.send(302, "text/plain", "");
@@ -127,6 +135,12 @@ void handleUpdateTimerDuration() {
 
 void setup() {
   Serial.begin(115200);
+
+  prefs.begin("prefs", true);
+  if (prefs.isKey("interval")) {
+    interval = prefs.getLong("interval");
+  }
+  prefs.end();
 
   pinMode(buttonPin, INPUT_PULLUP);
 
