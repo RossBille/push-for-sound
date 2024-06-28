@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
+// NOTE: add wifi_secrets.h with the following format:
+// const char* ssid = "SSID";
+// const char* password = "PASSWORD";
 #include <wifi_secrets.h>
 
 // set pin numbers
