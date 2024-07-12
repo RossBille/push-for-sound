@@ -156,27 +156,27 @@ void handleTest(){
 void setup() {
   Serial.begin(115200);
 
+  // Prefs
   prefs.begin("prefs", true);
   if (prefs.isKey("interval")) {
     interval = prefs.getLong("interval");
   }
   prefs.end();
 
+  // GPIOs
   pinMode(buttonPin, INPUT_PULLUP);
-
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
   setRelays(LOW);
-
   attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPressed, FALLING);
 
-  Serial.print("\nHardware setup Complete!\n");
-
+  // Filesystem
   if (!LittleFS.begin(true)) {
     Serial.print("LittleFS Mount Failed\n");
     return;
   }
 
+  // WIFI
   Serial.print("Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
@@ -184,7 +184,12 @@ void setup() {
     delay(500);
     Serial.print(".");
   }
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
+  // OTA
   ArduinoOTA
     .onStart([]() {
       String type;
@@ -217,15 +222,10 @@ void setup() {
         Serial.println("End Failed");
       }
     });
-
   ArduinoOTA.begin();
 
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  // Web Server
   server.begin();
-
   server.on("/", handleIndex);
   server.on("/disable-timer", handleDisableTimer);
   server.on("/enable-timer", handleEnableTimer);
@@ -236,14 +236,13 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
-
+  // relay handling
   unsigned long currentMillis = millis();
-
   if (timerState && currentMillis - previousMillis >= interval && relayState == HIGH) {    
     setRelays(LOW);
   }
 
   server.handleClient();
+  ArduinoOTA.handle();
 }
 
