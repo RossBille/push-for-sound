@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include <ArduinoOTA.h>
+
+#include "FS.h"
+#include <LittleFS.h>
+
 #include <WiFi.h>
 #include <WebServer.h>
 // NOTE: add wifi_secrets.h with the following format:
@@ -134,6 +138,21 @@ void handleUpdateTimerDuration() {
   server.send(302, "text/plain", "");
 }
 
+void handleTest(){
+  String path = "/index.html";
+
+  File file = LittleFS.open(path);
+  if(!file || file.isDirectory()) {
+    server.send(500, "text/html", "Could not load: " + path);
+  }
+
+  String page = file.readString();
+
+  file.close();
+
+  server.send(200, "text/html", page);
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -152,6 +171,11 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPressed, FALLING);
 
   Serial.print("\nHardware setup Complete!\n");
+
+  if (!LittleFS.begin(true)) {
+    Serial.print("LittleFS Mount Failed\n");
+    return;
+  }
 
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -208,6 +232,7 @@ void setup() {
   server.on("/update-timer-duration", handleUpdateTimerDuration);
   server.on("/force-on", handleRelaysOn);
   server.on("/force-off", handleRelaysOff);
+  server.on("/test", handleTest);
 }
 
 void loop() {
