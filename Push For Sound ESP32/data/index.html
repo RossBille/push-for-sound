@@ -1,12 +1,49 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script>
-            console.log("hello world!");
-        </script>
+        <title>Push to Play</title>
     </head>
     <body>
-        <h1>Heading</h1>
-        <p>Paragraph</p>
+        <div id="root">
+            <h1>Current status:</h1>
+            <ul>
+                <li>Relay state: <span id="relay-state"></span></li>
+                <li>Timer state: <span id="timer-state"></span></li>
+                <li>Timer duration: <span id="timer-duration"></span></li>
+            </ul>
+        </div>
+        <div>
+            <h1>Configuration:</h1>
+            <ul>
+                <li><a href="/disable-timer">Disable Timer</a></li>
+                <li><a href="/enable-timer">enable-timer</a></li>
+                <li>
+                    <form action="/update-timer-duration">
+                        <label>Duration (ms):<input type="number"></label>
+                        <input type="submit" value="Submit">
+                    </form>
+                </li>
+                <li><a href="/force-off">Force relays off</a></li>
+                <li><a href="/force-on">Force relays on</a></li>
+            </ul>
+        </div>
     </body>
+    <script>
+        var relayState = document.getElementById("relay-state");
+        var timerState = document.getElementById("timer-state");
+        var timerDuration = document.getElementById("timer-duration");
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var res = JSON.parse(this.responseText);
+                relayState.textContent = res.relayState;
+                timerState.textContent = res.timerState;
+                timerDuration = res.timerDuration;
+            }
+        };
+        xhttp.open("GET", "/state", true);
+        xhttp.send();
+        relayState.textContent = "enabled";
+    </script>
 </html>

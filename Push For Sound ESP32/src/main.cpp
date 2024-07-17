@@ -95,6 +95,29 @@ void handleIndex() {
   server.send(200, "text/html", str);  
 }
 
+void handleState() {
+  Serial.println("#handleState");
+  String str = "{";
+  str += "\"relayState\":\"";
+  if (relayState == LOW) { 
+    str += "\"off\"";
+  } else if (relayState == HIGH) {
+    str += "\"on\"";
+  } else {
+    str += "\"UNKNOWN\"";
+  }
+  str += ", \"timerState\":";
+  if (timerState) {
+    str += "\"enabled\"";
+  } else {
+    str += "\"disabled\"";
+  }
+  str += ", \"timerDuration\":";
+  str += interval / 1000;
+  str += "}";
+  server.send(200, "application/json", str);
+}
+
 void handleEnableTimer() {
   Serial.println("#handleEnableTimer");
   timerState = true;
@@ -233,6 +256,7 @@ void setup() {
   server.on("/force-on", handleRelaysOn);
   server.on("/force-off", handleRelaysOff);
   server.on("/test", handleTest);
+  server.on("/state", handleState);
 }
 
 void loop() {
