@@ -145,8 +145,9 @@ void setup() {
   // GPIOs
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(relay1Pin, OUTPUT);
+  digitalWrite(relay1Pin, LOW);
   pinMode(relay2Pin, OUTPUT);
-  maybeSetRelays(LOW);
+  digitalWrite(relay2Pin, LOW);
   attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPress, FALLING);
 
   // Filesystem
