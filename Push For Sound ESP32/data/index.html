@@ -9,22 +9,23 @@
             <ul>
                 <li>Relay state: <span id="relay-state"></span></li>
                 <li>Timer state: <span id="timer-state"></span></li>
-                <li>Timer duration: <span id="timer-duration"></span></li>
+                <li>Timer duration (s): <span id="timer-duration"></span></li>
             </ul>
         </div>
         <div>
             <h1>Configuration:</h1>
             <ul>
-                <li><a href="/disable-timer">Disable Timer</a></li>
-                <li><a href="/enable-timer">enable-timer</a></li>
+                <li><a href="/disable-timer?source=/">Disable Timer</a></li>
+                <li><a href="/enable-timer?source=/">enable-timer</a></li>
                 <li>
                     <form action="/update-timer-duration">
-                        <label>Duration (ms):<input type="number"></label>
+                        <label>Duration (s):<input name="durationSeconds" type="number"></label>
+                        <input name="source" value="/" hidden />
                         <input type="submit" value="Submit">
                     </form>
                 </li>
-                <li><a href="/force-off">Force relays off</a></li>
-                <li><a href="/force-on">Force relays on</a></li>
+                <li><a href="/force-off?source=/">Force relays off</a></li>
+                <li><a href="/force-on?source=/">Force relays on</a></li>
             </ul>
         </div>
     </body>
@@ -39,11 +40,10 @@
                 var res = JSON.parse(this.responseText);
                 relayState.textContent = res.relayState;
                 timerState.textContent = res.timerState;
-                timerDuration = res.timerDuration;
+                timerDuration.textContent = res.timerDuration;
             }
         };
         xhttp.open("GET", "/state", true);
         xhttp.send();
-        relayState.textContent = "enabled";
     </script>
 </html>

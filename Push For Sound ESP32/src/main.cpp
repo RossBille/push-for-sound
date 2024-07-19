@@ -49,56 +49,10 @@ void ICACHE_RAM_ATTR buttonPressed() {
   }
 }
 
-void handleIndex() {
-  Serial.println("#handleIndex");
-
-  String str = "<!DOCTYPE html> <html>\n";
-  str +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
-  str +="<title>Push to play</title>\n";
-  str +="<style>";
-  str +="</style>\n";
-  str +="</head>\n";
-  str +="<body>\n";
-  str +="<h1>Push to play config</h1>\n";
-  str += "<p>";
-  str += "Relay state: ";
-  if (relayState == LOW) { 
-    str += "off";
-  } else if (relayState == HIGH) {
-    str += "on";
-  } else {
-    str += "UNKNOWN";
-  }
-  str += "</p>";
-  str += "<p>";
-  str += "Timer state: ";
-  if (timerState) {
-    str += "enabled";
-  } else {
-    str += "disabled";
-  }
-  str += "</p>";
-  str += "<p> Timer Duration: ";
-  str += interval / 1000;
-  str += " seconds</p>";
-  str += "<p><a href=\"/enable-timer\">Enable timer mode</a>";
-  str += "</br>";
-  str += "<a href=\"/disable-timer\">Disable timer mode</a>";
-  str += "</br>";
-  str += "<a href=\"/force-on\">Force relays on</a>";
-  str += "</br>";
-  str += "<a href=\"/force-off\">Force relays off</a>";
-  str += "</p>";
-  str +="</body>\n";
-  str +="</html>\n";
-
-  server.send(200, "text/html", str);  
-}
-
 void handleState() {
   Serial.println("#handleState");
   String str = "{";
-  str += "\"relayState\":\"";
+  str += "\"relayState\":";
   if (relayState == LOW) { 
     str += "\"off\"";
   } else if (relayState == HIGH) {
@@ -118,34 +72,39 @@ void handleState() {
   server.send(200, "application/json", str);
 }
 
+void maybeRedirect() {
+  if (server.hasArg("source")) {
+    server.sendHeader("Location", server.arg("source"), true);
+    server.send(302, "text/plain", "");
+  } else {
+    server.send(200, "text/plain", "ok");
+  }
+}
+
 void handleEnableTimer() {
   Serial.println("#handleEnableTimer");
   timerState = true;
-  server.sendHeader("Location", "/", true);  
-  server.send(302, "text/plain", "");
+  maybeRedirect();
 }
 
 void handleDisableTimer() {
   Serial.println("#handleDisableTimer");
   timerState = false;
-  server.sendHeader("Location", "/", true);  
-  server.send(302, "text/plain", "");
+  maybeRedirect();
 }
 
 void handleRelaysOn() {
   Serial.println("#handleRelaysOn");
   timerState = false;
   setRelays(HIGH);
-  server.sendHeader("Location", "/", true);  
-  server.send(302, "text/plain", "");
+  maybeRedirect();
 }
 
 void handleRelaysOff() {
   Serial.println("#handleRelaysOff");
   timerState = false;
   setRelays(LOW);
-  server.sendHeader("Location", "/", true);  
-  server.send(302, "text/plain", "");
+  maybeRedirect();
 }
 
 void handleUpdateTimerDuration() {
@@ -157,20 +116,16 @@ void handleUpdateTimerDuration() {
     prefs.putLong("interval", interval);
     prefs.end();
   }
-  server.sendHeader("Location", "/", true);  
-  server.send(302, "text/plain", "");
+    maybeRedirect();
 }
 
-void handleTest(){
+void handleIndex(){
   String path = "/index.html";
-
   File file = LittleFS.open(path);
   if(!file || file.isDirectory()) {
     server.send(500, "text/html", "Could not load: " + path);
   }
-
   String page = file.readString();
-
   file.close();
 
   server.send(200, "text/html", page);
@@ -255,7 +210,6 @@ void setup() {
   server.on("/update-timer-duration", handleUpdateTimerDuration);
   server.on("/force-on", handleRelaysOn);
   server.on("/force-off", handleRelaysOff);
-  server.on("/test", handleTest);
   server.on("/state", handleState);
 }
 
