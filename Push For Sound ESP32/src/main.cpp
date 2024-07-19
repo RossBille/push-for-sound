@@ -95,14 +95,12 @@ void handleDisableTimer() {
 
 void handleRelaysOn() {
   Serial.println("#handleRelaysOn");
-  timerState = false;
   setRelays(HIGH);
   maybeRedirect();
 }
 
 void handleRelaysOff() {
   Serial.println("#handleRelaysOff");
-  timerState = false;
   setRelays(LOW);
   maybeRedirect();
 }
