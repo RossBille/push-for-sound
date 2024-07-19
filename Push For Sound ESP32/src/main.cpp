@@ -20,6 +20,8 @@ const int relay2Pin = 17;
 // the last time the button was pressed
 unsigned long previousMillis = 0;
 
+boolean buttonPressed = false;
+
 // the state of both relays
 uint8_t relayState = LOW;
 
@@ -34,19 +36,20 @@ WebServer server(80);
 
 Preferences prefs;
 
-void setRelays(uint8_t val) {
-    Serial.print("Setting relays: ");
-    Serial.println(val);
-    relayState = val;
-    digitalWrite(relay1Pin, val);
-    digitalWrite(relay2Pin, val);
+void maybeSetRelays(uint8_t val) {
+  if (relayState == val) {
+    Serial.print("not setting relays");
+    return;
+  }
+  Serial.print("Setting relays: ");
+  Serial.println(val);
+  relayState = val;
+  digitalWrite(relay1Pin, val);
+  digitalWrite(relay2Pin, val);
 }
 
-void ICACHE_RAM_ATTR buttonPressed() {
-  previousMillis = millis();
-  if (relayState == LOW) {
-    setRelays(HIGH);
-  }
+void ICACHE_RAM_ATTR buttonPress() {
+  buttonPressed = true;
 }
 
 void handleState() {
@@ -95,13 +98,13 @@ void handleDisableTimer() {
 
 void handleRelaysOn() {
   Serial.println("#handleRelaysOn");
-  setRelays(HIGH);
+  maybeSetRelays(HIGH);
   maybeRedirect();
 }
 
 void handleRelaysOff() {
   Serial.println("#handleRelaysOff");
-  setRelays(LOW);
+  maybeSetRelays(LOW);
   maybeRedirect();
 }
 
@@ -143,8 +146,8 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(relay1Pin, OUTPUT);
   pinMode(relay2Pin, OUTPUT);
-  setRelays(LOW);
-  attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPressed, FALLING);
+  maybeSetRelays(LOW);
+  attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPress, FALLING);
 
   // Filesystem
   if (!LittleFS.begin(true)) {
@@ -212,10 +215,18 @@ void setup() {
 }
 
 void loop() {
-  // relay handling
   unsigned long currentMillis = millis();
+
+  // handle button press
+  if (buttonPressed) {
+    previousMillis = currentMillis;
+    maybeSetRelays(HIGH);
+    buttonPressed = false;
+  }
+
+  // handle timer elapsed
   if (timerState && currentMillis - previousMillis >= interval && relayState == HIGH) {    
-    setRelays(LOW);
+    maybeSetRelays(LOW);
   }
 
   server.handleClient();
