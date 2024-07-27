@@ -14,6 +14,7 @@
 
 // set pin numbers
 const int buttonPin = 12; // G12
+const int buttonLedPin = 14; // G14
 const int relay1Pin = 16;
 const int relay2Pin = 17;
 
@@ -35,6 +36,12 @@ long interval = 1000 * 60 * 5; // 5 mins
 WebServer server(80);
 
 Preferences prefs;
+
+void maybeSetButtonLed(uint8_t val) {
+  if (digitalRead(buttonLedPin) != val) {
+    digitalWrite(buttonLedPin, val);
+  }
+}
 
 void maybeSetRelays(uint8_t val) {
   if (relayState == val) {
@@ -148,6 +155,8 @@ void setup() {
   digitalWrite(relay1Pin, LOW);
   pinMode(relay2Pin, OUTPUT);
   digitalWrite(relay2Pin, LOW);
+  pinMode(buttonLedPin, OUTPUT);
+  digitalWrite(buttonLedPin, HIGH);
   attachInterrupt(digitalPinToInterrupt(buttonPin), buttonPress, FALLING);
 
   // Filesystem
@@ -229,6 +238,9 @@ void loop() {
   if (timerEnabled && currentMillis - relaysLastTurnedOnMillis >= interval) {
     maybeSetRelays(LOW);
   }
+
+  // handle LED
+  maybeSetButtonLed(!relayState);
 
   server.handleClient();
   ArduinoOTA.handle();
