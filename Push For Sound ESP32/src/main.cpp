@@ -17,15 +17,15 @@ const int buttonPin = 12; // G12
 const int relay1Pin = 16;
 const int relay2Pin = 17;
 
-// the last time the button was pressed
-unsigned long previousMillis = 0;
+// the last time the relays were turned on
+unsigned long relaysLastTurnedOnMillis = 0;
 
 boolean buttonPressed = false;
 
 // the state of both relays
 uint8_t relayState = LOW;
 
-boolean timerState = true; // false = disabled, true = enabled
+boolean timerEnabled = true; // false = disabled, true = enabled
 
 // the amount of time to wait before turning off the relay
 long interval = 1000 * 60 * 5; // 5 mins
@@ -64,7 +64,7 @@ void handleState() {
     str += "\"UNKNOWN\"";
   }
   str += ", \"timerState\":";
-  if (timerState) {
+  if (timerEnabled) {
     str += "\"enabled\"";
   } else {
     str += "\"disabled\"";
@@ -86,18 +86,19 @@ void maybeRedirect() {
 
 void handleEnableTimer() {
   Serial.println("#handleEnableTimer");
-  timerState = true;
+  timerEnabled = true;
   maybeRedirect();
 }
 
 void handleDisableTimer() {
   Serial.println("#handleDisableTimer");
-  timerState = false;
+  timerEnabled = false;
   maybeRedirect();
 }
 
 void handleRelaysOn() {
   Serial.println("#handleRelaysOn");
+  relaysLastTurnedOnMillis = millis();
   maybeSetRelays(HIGH);
   maybeRedirect();
 }
@@ -220,13 +221,13 @@ void loop() {
 
   // handle button press
   if (buttonPressed) {
-    previousMillis = currentMillis;
+    relaysLastTurnedOnMillis = currentMillis;
     maybeSetRelays(HIGH);
     buttonPressed = false;
   }
 
   // handle timer elapsed
-  if (timerState && currentMillis - previousMillis >= interval && relayState == HIGH) {    
+  if (timerEnabled && currentMillis - relaysLastTurnedOnMillis >= interval && relayState == HIGH) {
     maybeSetRelays(LOW);
   }
 
