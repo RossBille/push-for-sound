@@ -38,7 +38,6 @@ Preferences prefs;
 
 void maybeSetRelays(uint8_t val) {
   if (relayState == val) {
-    Serial.print("not setting relays");
     return;
   }
   Serial.print("Setting relays: ");
@@ -227,7 +226,7 @@ void loop() {
   }
 
   // handle timer elapsed
-  if (timerEnabled && currentMillis - relaysLastTurnedOnMillis >= interval && relayState == HIGH) {
+  if (timerEnabled && currentMillis - relaysLastTurnedOnMillis >= interval) {
     maybeSetRelays(LOW);
   }
 
