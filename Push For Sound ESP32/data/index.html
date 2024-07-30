@@ -2,31 +2,48 @@
 <html>
     <head>
         <title>Push to Play</title>
+        <style>
+            .container {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            .status, a, form {
+                padding: 1em;
+                border: 1px solid black;
+                border-radius: 1em;
+                margin-right: 1em;
+                margin-bottom: 1em;
+                flex-grow: 1;
+            }
+        </style>
     </head>
     <body>
-        <div id="root">
-            <h1>Current status:</h1>
-            <ul>
-                <li>Relay state: <span id="relay-state"></span></li>
-                <li>Timer state: <span id="timer-state"></span></li>
-                <li>Timer duration (s): <span id="timer-duration"></span></li>
-            </ul>
+        <h1>Current status:</h1>
+        <div class="container">
+            <div class="status">
+                <div>Relay State: </div>
+                <div id="relay-state">loading...</div>
+            </div>
+            <div class="status">
+                <div>Timer state: </div>
+                <div id="timer-state">loading...</div>
+            </div>
+            <div class="status">
+                <div>Timer duration (s): </div>
+                <div id="timer-duration">loading...</div>
+            </div>
         </div>
-        <div>
-            <h1>Configuration:</h1>
-            <ul>
-                <li><a href="/disable-timer?source=/">Disable Timer</a></li>
-                <li><a href="/enable-timer?source=/">enable-timer</a></li>
-                <li>
-                    <form action="/update-timer-duration">
-                        <label>Duration (s):<input name="durationSeconds" type="number"></label>
-                        <input name="source" value="/" hidden />
-                        <input type="submit" value="Submit">
-                    </form>
-                </li>
-                <li><a href="/force-off?source=/">Force relays off</a></li>
-                <li><a href="/force-on?source=/">Force relays on</a></li>
-            </ul>
+        <h1>Configuration:</h1>
+        <div class="container">
+            <a href="/disable-timer?source=/">Disable Timer</a>
+            <a href="/enable-timer?source=/">enable-timer</a>
+            <form action="/update-timer-duration">
+                <label>Duration (s):<input name="durationSeconds" type="number"></label>
+                <input name="source" value="/" hidden />
+                <input type="submit" value="Submit">
+            </form>
+            <a href="/force-off?source=/">Force relays off</a>
+            <a href="/force-on?source=/">Force relays on</a>
         </div>
     </body>
     <script>
