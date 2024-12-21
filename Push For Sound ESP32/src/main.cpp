@@ -28,6 +28,8 @@ uint8_t relayState = LOW;
 
 boolean timerEnabled = true; // false = disabled, true = enabled
 
+boolean buttonEnabled = true; // false = disabled, true = enabled
+
 // the amount of time to wait before turning off the relay
 long interval = 1000 * 60 * 5; // 5 mins
 // const long interval = 1000 * 10 * 1; // 10 seconds
@@ -61,7 +63,13 @@ void ICACHE_RAM_ATTR buttonPress() {
 void handleState() {
   Serial.println("#handleState");
   String str = "{";
-  str += "\"relayState\":";
+  str += "\"buttonState\":";
+  if (buttonEnabled) { 
+    str += "\"enabled\"";
+  } else {
+    str += "\"disabled\"";
+  }
+  str += ", \"relayState\":";
   if (relayState == LOW) { 
     str += "\"off\"";
   } else if (relayState == HIGH) {
@@ -88,6 +96,18 @@ void maybeRedirect() {
   } else {
     server.send(200, "text/plain", "ok");
   }
+}
+
+void handleDisableButton() {
+  Serial.println("#handleDisableButton");
+  buttonEnabled = false;
+  maybeRedirect();
+}
+
+void handleEnableButton() {
+  Serial.println("#handleEnableButton");
+  buttonEnabled = true;
+  maybeRedirect();
 }
 
 void handleEnableTimer() {
@@ -216,6 +236,8 @@ void setup() {
   // Web Server
   server.begin();
   server.on("/", handleIndex);
+  server.on("/disable-button", handleDisableButton);
+  server.on("/enable-button", handleEnableButton);
   server.on("/disable-timer", handleDisableTimer);
   server.on("/enable-timer", handleEnableTimer);
   server.on("/update-timer-duration", handleUpdateTimerDuration);
@@ -228,7 +250,7 @@ void loop() {
   unsigned long currentMillis = millis();
 
   // handle button press
-  if (buttonPressed) {
+  if (buttonEnabled && buttonPressed) {
     relaysLastTurnedOnMillis = currentMillis;
     maybeSetRelays(HIGH);
     buttonPressed = false;
@@ -240,7 +262,9 @@ void loop() {
   }
 
   // handle LED
-  maybeSetButtonLed(!relayState);
+  if (buttonEnabled) {
+    maybeSetButtonLed(!relayState);
+  }
 
   server.handleClient();
   ArduinoOTA.handle();

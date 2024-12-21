@@ -21,6 +21,10 @@
         <h1>Current status:</h1>
         <div class="container">
             <div class="status">
+                <div>Button State: </div>
+                <div id="button-state">loading...</div>
+            </div>
+            <div class="status">
                 <div>Relay State: </div>
                 <div id="relay-state">loading...</div>
             </div>
@@ -35,6 +39,8 @@
         </div>
         <h1>Configuration:</h1>
         <div class="container">
+            <a href="/disable-button?source=/">Disable Button</a>
+            <a href="/enable-button?source=/">Enable Button</a>
             <a href="/disable-timer?source=/">Disable Timer</a>
             <a href="/enable-timer?source=/">enable-timer</a>
             <form action="/update-timer-duration">
@@ -47,6 +53,7 @@
         </div>
     </body>
     <script>
+        var buttonState = document.getElementById("button-state");
         var relayState = document.getElementById("relay-state");
         var timerState = document.getElementById("timer-state");
         var timerDuration = document.getElementById("timer-duration");
@@ -55,6 +62,7 @@
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 var res = JSON.parse(this.responseText);
+                buttonState.textContent = res.buttonState;
                 relayState.textContent = res.relayState;
                 timerState.textContent = res.timerState;
                 timerDuration.textContent = res.timerDuration;
