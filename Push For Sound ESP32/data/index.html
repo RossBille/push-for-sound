@@ -332,18 +332,27 @@
         var durationForm = document.getElementById("duration-form");
         var durationInput = document.getElementById("duration-input");
 
-        // Get toggle switches
         var buttonToggle = document.getElementById("button-toggle");
         var timerToggle = document.getElementById("timer-toggle");
         var relayToggle = document.getElementById("relay-toggle");
 
+        let connectionFailures = 0;
+
         function showError(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+            if (connectionFailures >= 3) {
+                notification.style.display = 'block';
+                notification.onclick = () => {
+                    notification.style.display = 'none';
+                    connectionFailures = 0;
+                };
+            } else {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
         }
 
         function sendRequest(url, callback) {
@@ -360,10 +369,14 @@
                         }
                     });
                 })
-                .then(callback)
+                .then(data => {
+                    connectionFailures = 0;
+                    callback(data);
+                })
                 .catch(error => {
                     console.error('Error:', error);
-                    showError('Connection failed. Please check your network connection.');
+                    connectionFailures++;
+                    showError('Connection failed. Please check your network connection.' + (connectionFailures >= 3 ? ' Click to dismiss.' : ''));
                 });
         }
 
@@ -424,7 +437,7 @@
         // Initial fetch
         fetchState();
 
-        // Refresh state every 2 seconds
-        setInterval(fetchState, 2000);
+        // Refresh state every 10 seconds
+        setInterval(fetchState, 10000);
     </script>
 </html>
