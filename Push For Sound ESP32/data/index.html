@@ -2,73 +2,429 @@
 <html>
     <head>
         <title>Push to Play</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
+            :root {
+                --primary-color: #4a90e2;
+                --success-color: #2ecc71;
+                --danger-color: #e74c3c;
+                --background-color: #f5f6fa;
+                --card-background: #ffffff;
+                --text-color: #2c3e50;
+                --toggle-width: 100px;
+                --toggle-height: 50px;
+                --toggle-padding: 5px;
+                --toggle-radius: 8px;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            }
+
+            body {
+                background-color: var(--background-color);
+                color: var(--text-color);
+                padding: 2rem;
+                line-height: 1.6;
+            }
+
+            h1 {
+                margin-bottom: 1.5rem;
+                color: var(--text-color);
+                font-size: 2rem;
+                font-weight: 600;
+            }
+
             .container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .status {
+                background: none;
+                padding: 0;
+                box-shadow: none;
+                margin-bottom: 0;
                 display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .status div:first-child {
+                font-weight: 500;
+                color: var(--text-color);
+                margin-bottom: 0;
+            }
+
+            .status div:last-child {
+                font-size: 1rem;
+            }
+
+            a, form {
+                background: var(--card-background);
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                text-decoration: none;
+                color: var(--primary-color);
+                font-weight: 500;
+                text-align: center;
+                border: 2px solid var(--primary-color);
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            a:hover {
+                background: var(--primary-color);
+                color: white;
+            }
+
+            a[href*="disable"], a[href*="force-off"] {
+                border-color: var(--danger-color);
+                color: var(--danger-color);
+            }
+
+            a[href*="disable"]:hover, a[href*="force-off"]:hover {
+                background: var(--danger-color);
+                color: white;
+            }
+
+            a[href*="enable"], a[href*="force-on"] {
+                border-color: var(--success-color);
+                color: var(--success-color);
+            }
+
+            a[href*="enable"]:hover, a[href*="force-on"]:hover {
+                background: var(--success-color);
+                color: white;
+            }
+
+            form {
+                margin: 0;
+                padding: 1rem;
+                gap: 0.75rem;
+            }
+
+            label {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+                text-align: left;
+                color: var(--text-color);
+            }
+
+            input[type="number"] {
+                padding: 0.4rem;
+                width: 80px;
+            }
+
+            input[type="submit"] {
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 1rem;
+                font-weight: 500;
+                transition: background 0.2s ease;
+            }
+
+            input[type="submit"]:hover {
+                background: #357abd;
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    padding: 1rem;
+                }
+
+                .container {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .control-group {
+                background: var(--card-background);
+                padding: 1.25rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .actions {
+                display: flex;
+                gap: 1rem;
                 flex-wrap: wrap;
             }
-            .status, a, form {
-                padding: 1em;
-                border: 1px solid black;
-                border-radius: 1em;
-                margin-right: 1em;
-                margin-bottom: 1em;
-                flex-grow: 1;
+
+            .actions > * {
+                flex: 1;
+                min-width: 150px;
+            }
+
+            .toggle-switch {
+                position: relative;
+                display: inline-block;
+                width: var(--toggle-width);
+                height: var(--toggle-height);
+            }
+
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .toggle-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                transition: .4s;
+                border-radius: var(--toggle-radius);
+            }
+
+            .toggle-slider:before {
+                position: absolute;
+                content: "";
+                height: calc(var(--toggle-height) - 2 * var(--toggle-padding));
+                width: calc(var(--toggle-height) - 2 * var(--toggle-padding));
+                left: var(--toggle-padding);
+                bottom: var(--toggle-padding);
+                background-color: white;
+                transition: .4s;
+                border-radius: var(--toggle-radius);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                z-index: 2;
+            }
+
+            .toggle-switch input:checked + .toggle-slider {
+                background-color: var(--success-color);
+            }
+
+            .toggle-switch input:checked + .toggle-slider:before {
+                transform: translateX(calc(var(--toggle-width) - var(--toggle-height)));
+            }
+
+            .toggle-container {
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+                padding: 0;
+            }
+
+            .toggle-label {
+                font-weight: 500;
+                color: var(--text-color);
+                flex: 1;
+                font-size: 1.1rem;
+            }
+
+            .actions.with-toggle {
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+
+            .notification {
+                display: none;
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #ff4444;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                z-index: 1000;
+                text-align: center;
+                max-width: 80%;
+            }
+
+            .notification.show {
+                display: block;
+                animation: fadeInOut 3s ease-in-out;
+            }
+
+            @keyframes fadeInOut {
+                0% { opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { opacity: 0; }
             }
         </style>
     </head>
     <body>
-        <h1>Current status:</h1>
+        <h1>Controls</h1>
         <div class="container">
-            <div class="status">
-                <div>Button State: </div>
-                <div id="button-state">loading...</div>
+            <div class="control-group">
+                <div class="actions with-toggle">
+                    <div class="toggle-container">
+                        <span class="toggle-label">Button</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="button-toggle">
+                            <span class="toggle-slider">
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="status">
-                <div>Relay State: </div>
-                <div id="relay-state">loading...</div>
+
+            <div class="control-group">
+                <div class="actions with-toggle">
+                    <div class="toggle-container">
+                        <span class="toggle-label">Relays</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="relay-toggle">
+                            <span class="toggle-slider">
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="status">
-                <div>Timer state: </div>
-                <div id="timer-state">loading...</div>
+
+            <div class="control-group">
+                <div class="actions with-toggle">
+                    <div class="toggle-container">
+                        <span class="toggle-label">Timer</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="timer-toggle">
+                            <span class="toggle-slider">
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="status">
-                <div>Timer duration (s): </div>
-                <div id="timer-duration">loading...</div>
+
+            <div class="control-group">
+                <div class="status">
+                    <div>Timer duration:</div>
+                    <div id="timer-duration">loading...</div>
+                </div>
+                <div class="actions">
+                    <form id="duration-form" onsubmit="updateDuration(event)">
+                        <label>
+                            Set duration:
+                            <input name="durationSeconds" type="number" id="duration-input">
+                            <input type="submit" value="Update">
+                        </label>
+                    </form>
+                </div>
             </div>
         </div>
-        <h1>Configuration:</h1>
-        <div class="container">
-            <a href="/disable-button?source=/">Disable Button</a>
-            <a href="/enable-button?source=/">Enable Button</a>
-            <a href="/disable-timer?source=/">Disable Timer</a>
-            <a href="/enable-timer?source=/">enable-timer</a>
-            <form action="/update-timer-duration">
-                <label>Duration (s):<input name="durationSeconds" type="number"></label>
-                <input name="source" value="/" hidden />
-                <input type="submit" value="Submit">
-            </form>
-            <a href="/force-off?source=/">Force relays off</a>
-            <a href="/force-on?source=/">Force relays on</a>
-        </div>
+        <div id="notification" class="notification"></div>
     </body>
     <script>
-        var buttonState = document.getElementById("button-state");
-        var relayState = document.getElementById("relay-state");
-        var timerState = document.getElementById("timer-state");
         var timerDuration = document.getElementById("timer-duration");
+        var durationForm = document.getElementById("duration-form");
+        var durationInput = document.getElementById("duration-input");
 
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var res = JSON.parse(this.responseText);
-                buttonState.textContent = res.buttonState;
-                relayState.textContent = res.relayState;
-                timerState.textContent = res.timerState;
-                timerDuration.textContent = res.timerDuration;
-            }
-        };
-        xhttp.open("GET", "/state", true);
-        xhttp.send();
+        // Get toggle switches
+        var buttonToggle = document.getElementById("button-toggle");
+        var timerToggle = document.getElementById("timer-toggle");
+        var relayToggle = document.getElementById("relay-toggle");
+
+        function showError(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function sendRequest(url, callback) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Server returned an error');
+                    }
+                    return response.text().then(text => {
+                        try {
+                            return text ? JSON.parse(text) : {};
+                        } catch (e) {
+                            return {};
+                        }
+                    });
+                })
+                .then(callback)
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Connection failed. Please check your network connection.');
+                });
+        }
+
+        function updateDuration(event) {
+            event.preventDefault();
+            const duration = document.getElementById('duration-input').value;
+            sendRequest(`/update-timer-duration?durationSeconds=${duration}&source=/`, () => {
+                fetchState();
+            });
+        }
+
+        function fetchState() {
+            sendRequest('/state', data => {
+                if (data.buttonState !== undefined) {
+                    document.getElementById('button-toggle').checked = data.buttonState === "enabled";
+                }
+                if (data.relayState !== undefined) {
+                    document.getElementById('relay-toggle').checked = data.relayState === "on";
+                }
+                if (data.timerState !== undefined) {
+                    document.getElementById('timer-toggle').checked = data.timerState === "enabled";
+                }
+                if (data.timerDuration !== undefined) {
+                    document.getElementById('timer-duration').textContent = data.timerDuration + " seconds";
+                    document.getElementById('duration-input').value = data.timerDuration;
+                }
+            });
+        }
+
+        // Add event listeners for toggles
+        buttonToggle.addEventListener('change', function() {
+            const newState = this.checked;
+            this.checked = !newState; // Revert the change immediately
+            var url = newState ? '/enable-button?source=/' : '/disable-button?source=/';
+            sendRequest(url, () => {
+                fetchState(); // Only update state after successful response
+            });
+        });
+
+        timerToggle.addEventListener('change', function() {
+            const newState = this.checked;
+            this.checked = !newState; // Revert the change immediately
+            var url = newState ? '/enable-timer?source=/' : '/disable-timer?source=/';
+            sendRequest(url, () => {
+                fetchState(); // Only update state after successful response
+            });
+        });
+
+        relayToggle.addEventListener('change', function() {
+            const newState = this.checked;
+            this.checked = !newState; // Revert the change immediately
+            var url = newState ? '/force-on?source=/' : '/force-off?source=/';
+            sendRequest(url, () => {
+                fetchState(); // Only update state after successful response
+            });
+        });
+
+        // Initial fetch
+        fetchState();
+
+        // Refresh state every 2 seconds
+        setInterval(fetchState, 2000);
     </script>
 </html>
